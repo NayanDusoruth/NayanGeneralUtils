@@ -13,6 +13,7 @@ import matplotlib as plt
 init_printing()
 from IPython.display import display
 import numpy as np
+import pandas as pd
 
 """
 This module is intended to make symbolic maths handling via the sympy library easier
@@ -46,6 +47,9 @@ sympy library recap/summary:
     
 
 """
+# ====================================================================================================================
+# general utility functions
+# ====================================================================================================================
 
 # sympy expression summation - </verified/>
 def sumExpressions(expressions):
@@ -75,23 +79,200 @@ def errorPropagate(expression, returnSymbols=False):
         return expressions, symbols
     return expressions
 
+# computes all error terms in equation rhs of al variables and returns terms as equations -</verified/>
+def errorPropagateEqs(equation, returnSummation = False, returnSummationSqrt = False):
+    """Wrapper for errorPropagate() function - returns error terms in equation 'f = expression' as equations 'f_Var_Err = errorTerm' - returnSummation also returns a summation equation 'f_err**2 = sum(f_var_err)'  """
+    errorTerms, symbols = errorPropagate(equation.rhs, returnSymbols=True)
+    
+    # reformat errorTerms into equation object - LHS symbols keeps track of LHS symbols of errorEquations
+    equations = np.array([])
+    LHSsymbols = np.array([])
+    for i in range(0,len(errorTerms)):
+        LHSterm = sy.symbols(str(str(list(equation.lhs.free_symbols)[0]) + "_" + str(symbols[i]) + "_Err"))**2
+        LHSsymbols = np.append(LHSsymbols, LHSterm)
+        equations = np.append(equations, sy.Eq(LHSterm, errorTerms[i]))
+        
+    # return summation of f_err^2 = sum(errorEquations)
+    if(returnSummation):
+        LHSsummation = sy.symbols(str(str(equation.lhs) + "_err"))**2
+        summationEq = sy.Eq(LHSsummation, sumExpressions(LHSsymbols))
+        return equations, summationEq
+    
+    # return summation of f_err = sqrt(sum(errorEquations))
+    if(returnSummationSqrt):
+        LHSsummation = sy.symbols(str(str(equation.lhs) + "_err"))
+        summationEq = sy.Eq(LHSsummation, sy.sqrt(sumExpressions(LHSsymbols)))
+        return equations, summationEq
+    return equations
+    
+
+# evaluates RHS of equation from dictionary of inputs - </verified/>
+def evalEquation(equation, inputs, evalNumeric=False):
+    """Evaluates rhs of a sympy equation of form 'f = expression' - inputs is a symbols:values dictionary - returns new dictionary of {f:value} - evalNumeric determines if result is exact algebraic or numeric value"""
+    # get rhs expression and left hand symbol
+    rhs = equation.rhs
+    lhsSymbol = equation.lhs
+
+    # substitute in all values 
+    for symbol, value in inputs.items():
+        rhs = rhs.subs(symbol, value)
+     
+    # convert to numeric if desired
+    if(evalNumeric):
+        rhs = rhs.evalf()
+    
+    # return
+    return {lhsSymbol:rhs}
 
 
-x, y, z = sy.symbols('x y z')
-expression = x**2+y**3 + z
+# ====================================================================================================================
+# equation flow class
+# ====================================================================================================================
 
-#errorTerm = errorPropagationTerm(expression, x)
-#sy.pprint(errorTerm)
-print(type(expression))
-errorTerms = errorPropagate(expression)
-print(errorTerms)
-errors = sumExpressions(errorTerms)
+# setup class for "series of equations?" when inputs of equations follow each other from some inputted measurements - measurement A -> Eq1, Eq2 -> Eq3 -> Eq4 inc error propagation
+class equationFlow():
+    # constructor - assumes equations are of form 'f = expression' - formatting as equation instead of expression so that each expression has a LHS symbol
+    def __init__(self, equations, constants={}):
+        # temp
+        self.equations = equations
+        self.constants = constants # dictionary {symbol:value} for any constant values in equations
+        
 
-sy.pprint(errors)
+    # utility method - goes through list of equations and finds free input variables into flow - </verified/>
+    def freeVariables(self):
+        """Utility method - goes through all self.equations and finds all 'free input variables' - these represent all necessary inputs for evaluation"""
+        # get list of all variables in RHS of all equations
+        rhsVariables = np.array([])
+        
+        for equation in self.equations:
+            rhsVariables = np.append(rhsVariables, list(equation.rhs.free_symbols))
+                    
+        # get list of all variables in LHS of all equations
+        fixedVariables = np.array([])
+        
+        # append LHS symbols to fixed variables
+        for equation in self.equations:
+            fixedVariables = np.append(fixedVariables, list(equation.lhs.free_symbols))
+        
+        # append self.constants to fixed variables
+        fixedVariables = np.append(fixedVariables, list(self.constants.keys()))
+        
+        # remove fixed variables from all variables in order to find free variables
+        indices = np.array([])
+        for symbol in fixedVariables:
+            indices = np.append(indices, np.where(rhsVariables == symbol))
+        indices = indices.astype(int)
+        
+        # assign free variables
+        self.freeVariables = np.delete(rhsVariables, indices)
+    
+    # utility method - add error propagation equations to self.equations - adding to main equation list to ensure error calculations occur correctly - </verified/>
+    def propagateErrors(self):
+        """Utility method - adds all error propagation terms to self.equations so that error propagation is part of 'equation flow'"""
+        errorTerms = np.array([])
+        
+        # Compute error equations and respective summations for all equations
+        for equation in self.equations:
+            errorEquations, summation = errorPropagateEqs(equation, returnSummationSqrt=True)
+            errorTerms = np.append(errorTerms, errorEquations)
+            errorTerms = np.append(errorTerms, summation)
+        
+        # append errorTerms to equations
+        self.equations = np.append(self.equations, errorTerms)
+    
+    # evaluation method - evaluates equations given inputs - </verified/>
+    def evalEquations(self, inputs):
+        """Given inputs, will evaluate all equations in flow and return dictionary of all values"""
+        values = inputs
+        values.update(self.constants) # add constants to values
+
+        for equation in self.equations:
+            values.update(evalEquation(equation, values)) # add results of equation evaluation to values
+
+        return values
+
+    # evaluation method - evaluates quations given a pandas dataframe of inputs - </verified/>
+    def bulkEvalEquations(self, inputs):
+        """Given a pandas dataframe of inputs, will return a pandas dataframe of all values - note input headers need to be sympy symbols"""
+        # setup list of output dictionaries, evaluate over all rows
+        outputs = np.array([])
+        for i in range(0, inputs.shape[0]):
+            outputs = np.append(outputs, self.evalEquations(inputs.iloc[1].to_dict()))
+        
+        # return outputs as new pandas dataframe
+        return pd.DataFrame.from_dict(outputs.tolist())
+
+    # printing method - pretty print all equations - </verified/>
+    def prettyPrintEqs(self):
+        """pprint() all equations in flow"""
+        for equation in self.equations:
+            sy.pprint(equation)
+            
+    # printing method - latex print all equations - </verified/>
+    def latexPrintEqs(self):
+        """latex print all equations in flow"""
+        for equation in self.equations:
+            print(sy.latex(equation))
+
+
+
 # ====================================================================================================================
 # general testing and experimentation 
 # ====================================================================================================================
 
+"""
+x, y, z = sy.symbols('x y z')
+f = sy.symbols('f')
+a, b, c = sy.symbols('a b c')
+expression = x**2+y**3 + z
+equation = sy.Eq(f,expression)
+inputs = {x:2,y:4,z:1,a:-1,b:2}
+
+sy.pprint(equation)
+value = evalEquation(equation, inputs, evalNumeric=False)
+print(value)
+"""
+
+
+"""
+a,b,c = sy.symbols('a b c')
+x,y,z = sy.symbols('x y z')
+d = sy.symbols('d')
+d_err = sy.symbols('d_err')
+x_err, y_err, z_err = sy.symbols('x_err y_err z_err')
+
+a_imp = sy.symbols('a')
+equationA = sy.Eq(a,x+y)
+equationB = sy.Eq(b,a+z)
+equationC = sy.Eq(c, b+d)
+
+equations = np.array([equationA, equationB, equationC])
+"""
+"""
+inputs = {x:2, y:3, z:1, x_err:0.5, y_err:0, z_err:0.1}
+
+
+flow = equationFlow(equations, constants={d:2, d_err:0})
+flow.propagateErrors()
+print(flow.equations)
+flow.freeVariables()
+results = flow.evalEquations(inputs)
+print(results)"""
+
+"""
+flow = equationFlow(equations, constants={d:2, d_err:0})
+
+flow.propagateErrors()
+flow.prettyPrintEqs()
+flow.latexPrintEqs()
+data = {x:[1,2,3], y:[2,2,2],z:[3,2,1], x_err:[0.5, 0.4, 0], y_err:[0, 0.1, 0.2], z_err:[0.1, 0.2, 0.05]}
+inputsBulk = pd.DataFrame(data)
+
+flow.bulkEvalEquations(inputsBulk)
+#print(row)
+results = flow.bulkEvalEquations(inputsBulk)
+#print(results)
+"""
 # algebraic solver experiment
 """
 x, a = sy.symbols('x a')
