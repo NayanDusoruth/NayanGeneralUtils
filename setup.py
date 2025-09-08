@@ -30,5 +30,5 @@ setup(
     ],
     install_requires=required,
     license="MIT",
-    url="https://github.com/topHatSurgeon/GeneralUtilities",
+    url="https://github.com/NayanDusoruth/NayanGeneralUtils",
 )
