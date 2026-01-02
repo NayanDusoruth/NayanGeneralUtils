@@ -8,6 +8,7 @@ NayanGeneralUtils/inputOutput.py
 NayanGeneralUtils/misc.py
 NayanGeneralUtils/plotting.py
 NayanGeneralUtils/progress.py
+NayanGeneralUtils.egg-info/.DS_Store
 NayanGeneralUtils.egg-info/PKG-INFO
 NayanGeneralUtils.egg-info/SOURCES.txt
 NayanGeneralUtils.egg-info/dependency_links.txt
