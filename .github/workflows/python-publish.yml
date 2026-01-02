@@ -29,6 +29,7 @@ jobs:
       - name: Build release distributions
         run: |
           # NOTE: put your own distribution build steps here.
+          python3 setup.py sdist bdist_wheel
           python -m pip install build
           python -m build
 
@@ -51,7 +52,7 @@ jobs:
     environment:
       name: pypi
       # OPTIONAL: uncomment and update to include your PyPI project URL in the deployment status:
-      # url: https://pypi.org/p/YOURPROJECT
+      url: https://pypi.org/p/NayanGeneralUtils
       #
       # ALTERNATIVE: if your GitHub Release name is the PyPI project version string
       # ALTERNATIVE: exactly, uncomment the following line instead:
