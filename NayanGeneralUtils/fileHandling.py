@@ -45,12 +45,12 @@ def saveCSV(filepath, filename, dataFrame):
     os.chdir(curDir)
 
 # utility function - saves string text as txt to filepath/filename.txt" - </verified/>
-def saveTxT(filepath, filename, text):
+def saveTxT(filepath, filename, text, ext="txt"):
     """File handling function - saves string text as txt to filepath/filename.txt"""
     curDir = os.getcwd() # get the current directory
     os.chdir(filepath)
     
-    file = open((filename + ".txt"), "a")
+    file = open((filename + "." + ext), "a")
     file.write(text)
     file.close()
     
