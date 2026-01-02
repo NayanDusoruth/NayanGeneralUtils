@@ -8,6 +8,7 @@ Created on Fri Mar 14 12:06:55 2025
 
 import os
 import pandas as pd
+import json
 
 
 """ File handling
@@ -43,7 +44,7 @@ def saveCSV(filepath, filename, dataFrame):
     dataFrame.to_csv(path)
     os.chdir(curDir)
 
-# utility function - saves string text as txt to filepath/filename.txt"
+# utility function - saves string text as txt to filepath/filename.txt" - </verified/>
 def saveTxT(filepath, filename, text):
     """File handling function - saves string text as txt to filepath/filename.txt"""
     curDir = os.getcwd() # get the current directory
@@ -55,7 +56,7 @@ def saveTxT(filepath, filename, text):
     
     os.chdir(curDir)
 
-# utility function - saves fig to directory with filename
+# utility function - saves fig to directory with filename - </verified/>
 def saveFigure(directory, fileName, fig):
     """File handling function - saves fig to directory with filename"""
     # go to desired directory
@@ -67,3 +68,35 @@ def saveFigure(directory, fileName, fig):
     
     # go back to original directory
     os.chdir(curDir)
+    
+    
+# utility function - saves python dictionary as a json file 
+def saveDictAsJson(directory, fileName, dictionary, indent=3):
+    """File handling function - saves dictionary to directory with filename as Json with indent=indent"""
+    
+    # go to desired directory
+    curDir = os.getcwd() # get the current directory
+    os.chdir(directory)
+    
+    # save file as json
+    with open("citationFieldRequirements.json", "w") as file:
+        json.dump(dictionary, file, indent=indent)
+        
+    # go back to original directory
+    os.chdir(curDir)
+
+# utility function - loads python dictionary from json file
+def loadDictFromJson(directory, fileName):
+    """File handling function - loads dictionary from directory/fileName.json"""
+    # go to desired directory
+    curDir = os.getcwd() # get the current directory
+    os.chdir(directory)
+    
+    # access json file
+    with open(fileName + '.json') as json_file:
+        dictionary = json.load(json_file) 
+        
+    # go back to original directory
+    os.chdir(curDir)
+    
+    return dictionary
