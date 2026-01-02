@@ -55,6 +55,19 @@ def saveTxT(filepath, filename, text):
     file.close()
     
     os.chdir(curDir)
+    
+# utility function - reads string from txt doc and returns - note can change file extension if need be - </verified/>
+def readTxT(filepath, filename, ext="txt"):
+    """File handling function - reads string content of ilepath/filename.ext"""
+    
+    curDir = os.getcwd() # get the current directory
+    os.chdir(filepath)
+    file = open(filepath + "/" + filename + "." + ext ,"r")
+    text = file.read()
+    
+    os.chdir(curDir)
+    
+    return text
 
 # utility function - saves fig to directory with filename - </verified/>
 def saveFigure(directory, fileName, fig):
@@ -70,7 +83,7 @@ def saveFigure(directory, fileName, fig):
     os.chdir(curDir)
     
     
-# utility function - saves python dictionary as a json file 
+# utility function - saves python dictionary as a json file  - </verified/>
 def saveDictAsJson(directory, fileName, dictionary, indent=3):
     """File handling function - saves dictionary to directory with filename as Json with indent=indent"""
     
@@ -85,7 +98,7 @@ def saveDictAsJson(directory, fileName, dictionary, indent=3):
     # go back to original directory
     os.chdir(curDir)
 
-# utility function - loads python dictionary from json file
+# utility function - loads python dictionary from json file - </verified/>
 def loadDictFromJson(directory, fileName):
     """File handling function - loads dictionary from directory/fileName.json"""
     # go to desired directory
