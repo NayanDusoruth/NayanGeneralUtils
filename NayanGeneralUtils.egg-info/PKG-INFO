@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: NayanGeneralUtils
 Version: 1.4.10
 Summary: A personal library of generally useful functions, methods and classes
@@ -27,6 +27,14 @@ Requires-Dist: scipy==1.16.1
 Requires-Dist: six==1.17.0
 Requires-Dist: sympy==1.14.0
 Requires-Dist: tzdata==2025.2
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license
+Dynamic: requires-dist
+Dynamic: summary
 
 This is a personal python library including assorted general utilities i've standardised for my own reuse.
 
