@@ -2,6 +2,7 @@ README.md
 setup.cfg
 setup.py
 NayanGeneralUtils/__init__.py
+NayanGeneralUtils/equationHandler.py
 NayanGeneralUtils/fileHandling.py
 NayanGeneralUtils/inputOutput.py
 NayanGeneralUtils/misc.py
@@ -10,4 +11,5 @@ NayanGeneralUtils/progress.py
 NayanGeneralUtils.egg-info/PKG-INFO
 NayanGeneralUtils.egg-info/SOURCES.txt
 NayanGeneralUtils.egg-info/dependency_links.txt
+NayanGeneralUtils.egg-info/requires.txt
 NayanGeneralUtils.egg-info/top_level.txt
