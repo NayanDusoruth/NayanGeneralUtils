@@ -106,7 +106,7 @@ def loadDictFromJson(directory, fileName):
     os.chdir(directory)
     
     # access json file
-    with open(fileName + '.json') as json_file:
+    with open(directory + "/" + fileName + '.json') as json_file:
         dictionary = json.load(json_file) 
         
     # go back to original directory
