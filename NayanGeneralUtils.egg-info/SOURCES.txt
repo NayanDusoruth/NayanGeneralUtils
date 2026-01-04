@@ -2,6 +2,7 @@ README.md
 setup.cfg
 setup.py
 NayanGeneralUtils/__init__.py
+NayanGeneralUtils/bibtexHandler.py
 NayanGeneralUtils/equationHandler.py
 NayanGeneralUtils/fileHandling.py
 NayanGeneralUtils/inputOutput.py
