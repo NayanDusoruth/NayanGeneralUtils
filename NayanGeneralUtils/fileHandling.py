@@ -50,7 +50,7 @@ def saveTxT(filepath, filename, text, ext="txt"):
     curDir = os.getcwd() # get the current directory
     os.chdir(filepath)
     
-    file = open((filename + "." + ext), "a")
+    file = open((filepath + "/" +filename + "." + ext), "a")
     file.write(text)
     file.close()
     
