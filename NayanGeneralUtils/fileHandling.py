@@ -40,7 +40,7 @@ def saveCSV(filepath, filename, dataFrame):
     """File handling function - saves dataframe as csv to filepath/filename.csv"""
     curDir = os.getcwd() # get the current directory
     os.chdir(filepath)
-    path = filepath + filename + ".csv"
+    path = filepath + "/" + filename + ".csv"
     dataFrame.to_csv(path)
     os.chdir(curDir)
 
@@ -50,7 +50,7 @@ def saveTxT(filepath, filename, text, ext="txt"):
     curDir = os.getcwd() # get the current directory
     os.chdir(filepath)
     
-    file = open((filepath + "/" +filename + "." + ext), "a")
+    file = open((filename + "." + ext), "a")
     file.write(text)
     file.close()
     
